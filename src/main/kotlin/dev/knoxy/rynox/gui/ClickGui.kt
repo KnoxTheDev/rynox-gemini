@@ -5,6 +5,7 @@ import dev.knoxy.rynox.module.Category
 import dev.knoxy.rynox.module.ModuleManager
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import kotlin.math.min
 
@@ -22,15 +23,16 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
   }
 
   override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-    context.matrices.push()
+    val matrices = context.matrices
+    matrices.push()
 
-    context.fill(0, 0, width, height, 0x80000000)
+    context.fill(0, 0, width, height, 0x80000000.toInt())
 
     panels.forEach { panel ->
       panel.render(context, mouseX.toFloat(), mouseY.toFloat())
     }
 
-    context.matrices.pop()
+    matrices.pop()
     super.render(context, mouseX, mouseY, delta)
   }
 
@@ -84,7 +86,7 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
         y.toInt(),
         (x + width).toInt(),
         (y + h).toInt(),
-        0xFF202020
+        0xFF202020.toInt()
       )
 
       context.fill(
@@ -96,10 +98,10 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
       )
       context.drawTextWithShadow(
         textRenderer,
-        "${category.icon} ${category.name}",
+        Text.literal("${category.icon} ${category.name}"),
         (x + 2f).toInt(),
         (y + 2f).toInt(),
-        0xFFFFFFFF
+        0xFFFFFFFF.toInt()
       )
 
       if (expanded) {
@@ -112,14 +114,14 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
               modY.toInt(),
               (x + width - 2).toInt(),
               (modY + moduleHeight).toInt(),
-              if (module.enabled) 0xFF404040 else 0xFF303030
+              if (module.enabled) 0xFF404040.toInt() else 0xFF303030.toInt()
             )
             context.drawTextWithShadow(
               textRenderer,
-              module.name,
+              Text.literal(module.name),
               (x + 4f).toInt(),
               (modY + 2f).toInt(),
-              if (module.enabled) 0xFF00FF00 else 0xFFFFFFFF
+              if (module.enabled) 0xFF00FF00.toInt() else 0xFFFFFFFF.toInt()
             )
           }
         }
@@ -133,7 +135,7 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
             scrollY.toInt(),
             x.toInt() + width.toInt(),
             (scrollY + barHeight).toInt(),
-            0xFF808080
+            0xFF808080.toInt()
           )
         }
       }
