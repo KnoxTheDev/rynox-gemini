@@ -16,43 +16,40 @@ import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 
 object Rynox : ClientModInitializer {
-  val eventBus = EventBus()
-  val moduleManager = ModuleManager()
-  val configManager = ConfigManager()
+    val eventBus = EventBus()
+    val moduleManager = ModuleManager()
+    val configManager = ConfigManager()
 
-  private lateinit var guiKey: KeyBinding
+    private lateinit var guiKey: KeyBinding
 
-  override fun onInitializeClient() {
-    moduleManager.init()
-    configManager.init()
-    eventBus.register(moduleManager)
+    override fun onInitializeClient() {
+        moduleManager.init()
+        configManager.init()
+        eventBus.register(moduleManager)
 
-    ClientTickEvents.END_CLIENT_TICK.register { client: MinecraftClient ->
-      moduleManager.onTick(client)
-      eventBus.post(TickEvent.End(client))
+        ClientTickEvents.END_CLIENT_TICK.register { client: MinecraftClient ->
+            moduleManager.onTick(client)
+            eventBus.post(TickEvent.End(client))
+        }
+
+        // Use a valid KeyBinding category, not raw String
+        guiKey = KeyBindingHelper.registerKeyBinding(
+            KeyBinding(
+                "key.rynox.gui",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                KeyBinding.MISC_CATEGORY
+            )
+        )
+
+        ClientTickEvents.END_CLIENT_TICK.register { client: MinecraftClient ->
+            while (guiKey.wasPressed()) {
+                client.setScreen(ClickGui())
+            }
+        }
+
+        ClientLifecycleEvents.CLIENT_STOPPING.register {
+            configManager.save()
+        }
     }
-
-    guiKey = KeyBindingHelper.registerKeyBinding(
-      KeyBinding(
-        "key.rynox.gui",
-        InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_RIGHT_SHIFT,
-        "Rynox"
-      )
-    )
-
-    ClientTickEvents.END_CLIENT_TICK.register { client: MinecraftClient ->
-      while (guiKey.wasPressed()) {
-        client.setScreen(ClickGui())
-      }
-    }
-
-    ClientTickEvents.START_WORLD_TICK.register { _ ->
-      configManager.load()
-    }
-
-    ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
-      configManager.save()
-    }
-  }
 }
