@@ -1,0 +1,62 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+concurrency:
+  group: "build"
+  cancel-in-progress: true
+
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'        # ✅ safer glob pattern
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  deployments: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:               # ✅ removed incorrect @v4.7.0
+          java-version: '21'
+          distribution: 'zulu'
+
+      # Read version info from gradle.properties
+      - name: Read version from gradle.properties
+        id: properties
+        shell: bash
+        run: |
+          MOD_VERSION=$(grep -E '^mod_version=' gradle.properties | cut -d'=' -f2)
+          MC_VERSION=$(grep -E '^minecraft_version=' gradle.properties | cut -d'=' -f2)
+          echo "MOD_VERSION=${MOD_VERSION}" >> $GITHUB_ENV
+          echo "MC_VERSION=${MC_VERSION}" >> $GITHUB_ENV
+          echo "Building version ${MOD_VERSION} for Minecraft ${MC_VERSION}"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Remove *-dev.jar
+        run: rm -f ./build/libs/*-dev.jar || true   # ✅ use -f to avoid errors
+
+      - name: Create GitHub Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: ${{ env.MOD_VERSION }}-${{ env.MC_VERSION }}
+          prerelease: false
+          title: "Build ${{ env.MOD_VERSION }} for MC ${{ env.MC_VERSION }}"
+          files: |
+            ./build/libs/*.jar

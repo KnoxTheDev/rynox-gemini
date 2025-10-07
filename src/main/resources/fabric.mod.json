@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "rynox",
+	"version": "${version}",
+	"name": "Rynox",
+	"description": "ghost client",
+	"authors": [
+		"KnoxTheDev"
+	],
+	"contact": {
+		"sources": "https://github.com/KnoxTheDev/rynox-gemini"
+	},
+	"license": "GPL-3.0-only",
+	"icon": "assets/rynox/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "dev.knoxy.rynox.Rynox",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		"rynox.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.17.2",
+		"minecraft": "*",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	}
+}
