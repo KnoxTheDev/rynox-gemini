@@ -3,11 +3,12 @@ package dev.knoxy.rynox.gui
 import dev.knoxy.rynox.Rynox
 import dev.knoxy.rynox.module.Category
 import dev.knoxy.rynox.module.ModuleManager
+import dev.knoxy.rynox.module.modules.Render.ESP
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
-import kotlin.math.min
 
 class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
   private val moduleManager: ModuleManager = Rynox.moduleManager
@@ -23,16 +24,20 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
   }
 
   override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-    val matrices = context.matrices
-    matrices.push()
+    context.matrices.push()
 
-    fill(matrices, 0, 0, width, height, 0x80000000.toInt())
+    context.fill(0, 0, width, height, 0x80000000.toInt())
 
     panels.forEach { panel ->
-      panel.render(context, mouseX, mouseY)
+      panel.render(context, mouseX.toFloat(), mouseY.toFloat())
     }
 
-    matrices.pop()
+    val espModule = moduleManager.getModule("ESP") as? ESP
+    if (espModule?.enabled == true) {
+      espModule.renderESP(client, context.matrices)
+    }
+
+    context.matrices.pop()
     super.render(context, mouseX, mouseY, delta)
   }
 
@@ -80,11 +85,8 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
     private var scrollOffset = 0f
 
     fun render(context: DrawContext, mouseX: Float, mouseY: Float) {
-      val matrices = context.matrices
-
       val h = if (expanded) height else headerHeight
-      fill(
-        matrices,
+      context.fill(
         x.toInt(),
         y.toInt(),
         (x + width).toInt(),
@@ -92,8 +94,7 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
         0xFF202020.toInt()
       )
 
-      fill(
-        matrices,
+      context.fill(
         x.toInt(),
         y.toInt(),
         (x + width).toInt(),
@@ -101,10 +102,10 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
         category.color
       )
       textRenderer.drawWithShadow(
-        matrices,
+        context,
         "${category.icon} ${category.name}",
-        x + 2,
-        y + 2,
+        x + 2f,
+        y + 2f,
         0xFFFFFFFF.toInt()
       )
 
@@ -113,8 +114,7 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
         modules.forEachIndexed { index, module ->
           val modY = y + headerHeight + (index * moduleHeight) - scrollOffset
           if (modY > y + headerHeight && modY < y + height - 10) {
-            fill(
-              matrices,
+            context.fill(
               (x + 2).toInt(),
               modY.toInt(),
               (x + width - 2).toInt(),
@@ -122,25 +122,24 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
               if (module.enabled) 0xFF404040.toInt() else 0xFF303030.toInt()
             )
             textRenderer.drawWithShadow(
-              matrices,
+              context,
               module.name,
-              x + 4,
-              modY + 2,
+              x + 4f,
+              modY + 2f,
               if (module.enabled) 0xFF00FF00.toInt() else 0xFFFFFFFF.toInt()
             )
 
             module.getSettings().forEach { setting ->
               if (setting is SliderSetting) {
-                val barX = x + 60
+                val barX = x + 60f
                 val barWidth = 30f
-                val fillWidth = ((setting.value as Float - setting.min) /
+                val fillWidth = ((setting.value - setting.min) /
                   (setting.max - setting.min)) * barWidth
-                fill(
-                  matrices,
+                context.fill(
                   barX.toInt(),
-                  (modY + 10).toInt(),
+                  (modY + 10f).toInt(),
                   (barX + fillWidth).toInt(),
-                  (modY + 12).toInt(),
+                  (modY + 12f).toInt(),
                   0xFFAAAAAA.toInt()
                 )
               }
@@ -151,12 +150,12 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
         val contentHeight = modules.size * moduleHeight
         if (contentHeight > height - headerHeight) {
           val barHeight = (height / contentHeight) * (height - headerHeight)
-          fill(
-            matrices,
+          val scrollY = y + headerHeight + scrollOffset * (height - headerHeight) / contentHeight
+          context.fill(
             (x + width - 4).toInt(),
-            (y + headerHeight + scrollOffset * (height - headerHeight) / contentHeight).toInt(),
+            scrollY.toInt(),
             x.toInt() + width.toInt(),
-            (y + headerHeight + barHeight + scrollOffset * (height - headerHeight) / contentHeight).toInt(),
+            (scrollY + barHeight).toInt(),
             0xFF808080.toInt()
           )
         }
@@ -191,6 +190,7 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
             ) {
               val newValue = setting.min + ((mx - (x + 60)) / 30f) *
                 (setting.max - setting.min)
+              setting.value = newValue
             }
           }
         }

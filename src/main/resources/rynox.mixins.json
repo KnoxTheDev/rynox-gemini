@@ -3,8 +3,15 @@
 	"package": "dev.knoxy.rynox.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
 	],
+	"client": [
+    	"ClientPlayerEntityMixin",
+    	"EntityRendererMixin",
+    	"FabricLoaderMixin",
+    	"LivingEntityMixin",
+    	"MinecraftClientMixin",
+    	"PlayerEntityMixin"
+  	],
 	"injectors": {
 		"defaultRequire": 1
 	},

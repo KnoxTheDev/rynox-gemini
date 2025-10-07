@@ -26,13 +26,16 @@ class Fly : Module("Fly", Category.MOVEMENT, "Creative flight without detection"
     val input = client.options
 
     var velocity = Vec3d.ZERO
-    if (input.forwardKey.isPressed) velocity = velocity.add(player.getRotationVec(1f).x * speed.value)
-    if (input.backKey.isPressed) velocity = velocity.add(player.getRotationVec(1f).x * -speed.value)
-    if (input.leftKey.isPressed) velocity = velocity.add(player.getRotationVec(1f).z * speed.value)
-    if (input.rightKey.isPressed) velocity = velocity.add(player.getRotationVec(1f).z * -speed.value)
-    if (input.sneakKey.isPressed) velocity = velocity.add(0.0, -vertical.value, 0.0)
-    if (input.jumpKey.isPressed) velocity = velocity.add(0.0, vertical.value, 0.0)
+    val rotVec = player.getRotationVecClient(1f)
+    if (input.forwardKey.isPressed) velocity = velocity.add(rotVec.x * speed.value.toDouble(), 0.0, rotVec.z * speed.value.toDouble())
+    if (input.backKey.isPressed) velocity = velocity.add(-rotVec.x * speed.value.toDouble(), 0.0, -rotVec.z * speed.value.toDouble())
+    if (input.leftKey.isPressed) velocity = velocity.add(-rotVec.z * speed.value.toDouble(), 0.0, rotVec.x * speed.value.toDouble())
+    if (input.rightKey.isPressed) velocity = velocity.add(rotVec.z * speed.value.toDouble(), 0.0, -rotVec.x * speed.value.toDouble())
+    if (input.sneakKey.isPressed) velocity = velocity.add(0.0, -vertical.value.toDouble(), 0.0)
+    if (input.jumpKey.isPressed) velocity = velocity.add(0.0, vertical.value.toDouble(), 0.0)
 
-    player.velocity = velocity.normalize().multiply(speed.value)
+    if (velocity.length() > 0.0) {
+      player.velocity = velocity.normalize().multiply(speed.value.toDouble())
+    }
   }
 }

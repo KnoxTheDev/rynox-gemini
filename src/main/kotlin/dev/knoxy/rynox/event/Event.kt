@@ -9,6 +9,7 @@ open class CancellableEvent : Event {
   private var cancelled = false
 
   override fun isCancelled() = cancelled
+
   override fun cancel() {
     cancelled = true
   }

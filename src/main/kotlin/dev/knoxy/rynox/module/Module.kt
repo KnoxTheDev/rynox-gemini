@@ -27,14 +27,20 @@ abstract class Module(
   open fun getSettings(): List<Setting> = emptyList()
 }
 
-abstract class Setting(val name: String, val value: Any)
+abstract class Setting(val name: String, open var value: Any)
 
 class SliderSetting(
   name: String,
   val min: Float,
   val max: Float,
   initial: Float
-) : Setting(name, initial)
+) : Setting(name, initial) {
+  override var value: Float
+    get() = super.value as Float
+    set(value) {
+      super.value = value.coerceIn(min, max)
+    }
+}
 
 class ModeSetting(name: String, val modes: List<String>, initial: String) :
   Setting(name, initial)

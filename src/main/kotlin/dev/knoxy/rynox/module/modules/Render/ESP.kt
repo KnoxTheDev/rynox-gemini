@@ -5,28 +5,29 @@ import dev.knoxy.rynox.module.Module
 import dev.knoxy.rynox.module.SliderSetting
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexFormat
-import net.minecraft.client.render.VertexFormats
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.Box
+import net.minecraft.client.util.math.MatrixStack
 
 class ESP : Module("ESP", Category.RENDER, "Outlines entities through walls") {
-  private val color = SliderSetting("Red", 0f, 1f, 1f)
+  private val red = SliderSetting("Red", 0f, 1f, 1f)
 
-  override fun getSettings() = listOf(color)
+  override fun getSettings() = listOf(red)
 
   override fun onTick(client: MinecraftClient) {}
 
-  fun renderESP(client: MinecraftClient, matrices: net.minecraft.client.util.math.MatrixStack) {
+  fun renderESP(client: MinecraftClient, matrices: MatrixStack) {
     client.world?.entities?.filterIsInstance<PlayerEntity>()?.forEach { entity ->
       if (entity != client.player) {
         val box = entity.boundingBox
-        client.worldRenderer?.drawCuboidShape(
+        val buffer = client.bufferBuilders.getEffectVertexConsumers()
+          .getBuffer(RenderLayer.getOutline(Identifier("rynox", "esp")))
+        client.worldRenderer.drawCuboidShape(
           matrices,
-          client.bufferBuilders.getEffectVertexConsumers()
-            .getBuffer(RenderLayer.getOutline("rynox_esp")),
+          buffer,
           box,
-          1f, 0f, 0f, 1f
+          red.value, 0f, 0f, 1f
         )
       }
     }

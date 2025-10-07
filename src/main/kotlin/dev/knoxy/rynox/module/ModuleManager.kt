@@ -9,7 +9,7 @@ import dev.knoxy.rynox.module.modules.Render.ESP
 import dev.knoxy.rynox.util.ConfigManager
 import net.minecraft.client.MinecraftClient
 
-class ModuleManager : Any() {
+class ModuleManager {
   val modules = mutableListOf<Module>()
   private val configManager: ConfigManager = Rynox.configManager
 
@@ -48,6 +48,5 @@ class ModuleManager : Any() {
     modules.forEach { configManager.setModuleState(it.name, it.enabled) }
   }
 
-  fun onEvent(event: Event) {
-  }
+  fun onEvent(event: Event) {}
 }

@@ -1,6 +1,7 @@
 package dev.knoxy.rynox
 
 import dev.knoxy.rynox.event.EventBus
+import dev.knoxy.rynox.event.events.TickEvent
 import dev.knoxy.rynox.gui.ClickGui
 import dev.knoxy.rynox.module.ModuleManager
 import dev.knoxy.rynox.util.ConfigManager
@@ -8,8 +9,11 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
+import net.minecraft.client.option.KeyBindingCategory
 import net.minecraft.client.util.InputUtil
+import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 
 object Rynox : ClientModInitializer {
@@ -22,11 +26,11 @@ object Rynox : ClientModInitializer {
   override fun onInitializeClient() {
     moduleManager.init()
     configManager.init()
-    eventBus.register(moduleManager)
+    eventBus.register<Any>(moduleManager)
 
-    ClientTickEvents.END_CLIENT_TICK.register { client ->
+    ClientTickEvents.END_CLIENT_TICK.register { client: MinecraftClient ->
       moduleManager.onTick(client)
-      eventBus.post(event.TickEvent.End(client))
+      eventBus.post(TickEvent.End(client))
     }
 
     guiKey = KeyBindingHelper.registerKeyBinding(
@@ -34,21 +38,21 @@ object Rynox : ClientModInitializer {
         "key.rynox.gui",
         InputUtil.Type.KEYSYM,
         GLFW.GLFW_KEY_RIGHT_SHIFT,
-        "category.rynox"
+        KeyBindingCategory(Text.literal("Rynox"), 100)
       )
     )
 
-    ClientTickEvents.END_CLIENT_TICK.register { client ->
+    ClientTickEvents.END_CLIENT_TICK.register { client: MinecraftClient ->
       while (guiKey.wasPressed()) {
         client.setScreen(ClickGui())
       }
     }
 
-    ClientTickEvents.START_WORLD_TICK.register { world ->
+    ClientTickEvents.START_WORLD_TICK.register { _ ->
       configManager.load()
     }
 
-    ClientLifecycleEvents.CLIENT_STOPPING.register { client ->
+    ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
       configManager.save()
     }
   }

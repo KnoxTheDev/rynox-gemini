@@ -4,16 +4,10 @@ import dev.knoxy.rynox.module.Category
 import dev.knoxy.rynox.module.Module
 import dev.knoxy.rynox.module.SliderSetting
 import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.mob.HostileEntity
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.Hand
-import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 class KillAura : Module("KillAura", Category.COMBAT, "Auto-attacks nearby entities") {
@@ -30,7 +24,8 @@ class KillAura : Module("KillAura", Category.COMBAT, "Auto-attacks nearby entiti
 
     currentTarget = findTarget(client)
     currentTarget?.let { target ->
-      if (System.currentTimeMillis() - lastAttack > (1000 / cps.value)) {
+      val delay = (1000f / cps.value).toLong()
+      if (System.currentTimeMillis() - lastAttack > delay) {
         rotateTo(target, client)
         client.interactionManager?.attackEntity(client.player!!, target)
         client.player!!.swingHand(Hand.MAIN_HAND)
@@ -44,14 +39,14 @@ class KillAura : Module("KillAura", Category.COMBAT, "Auto-attacks nearby entiti
       client.player!!,
       client.player!!.boundingBox.expand(range.value.toDouble())
     )?.filterIsInstance<LivingEntity>()?.filter {
-      it !is client.player && it.health > 0 && !it.isDead
-    }?.minByOrNull { client.player!!.distanceTo(it) } as LivingEntity?
+      it != client.player && it.health > 0 && !it.isDead
+    }?.minByOrNull { client.player!!.distanceTo(it) }
   }
 
   private fun rotateTo(target: LivingEntity, client: MinecraftClient) {
-    val delta = target.pos.subtract(client.player!!.pos)
-    val yaw = (atan2(delta.z, delta.x) * 180 / Math.PI - 90).toFloat()
-    val pitch = -(atan2(delta.y, sqrt(delta.x * delta.x + delta.z * delta.z)) * 180 / Math.PI).toFloat()
+    val delta = target.getPos().subtract(client.player!!.getPos())
+    val yaw = (atan2(delta.z, delta.x) * 180.0 / Math.PI - 90).toFloat()
+    val pitch = -(atan2(delta.y, sqrt(delta.x * delta.x + delta.z * delta.z)) * 180.0 / Math.PI).toFloat()
 
     client.player!!.yaw = yaw
     client.player!!.pitch = pitch.coerceIn(-90f, 90f)
