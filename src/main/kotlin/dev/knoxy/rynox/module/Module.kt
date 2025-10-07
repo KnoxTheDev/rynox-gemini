@@ -34,13 +34,7 @@ class SliderSetting(
   val min: Float,
   val max: Float,
   initial: Float
-) : Setting(name, initial) {
-  override var value: Float
-    get() = super.value as Float
-    set(value) {
-      super.value = value.coerceIn(min, max)
-    }
-}
+) : Setting(name, initial)
 
 class ModeSetting(name: String, val modes: List<String>, initial: String) :
   Setting(name, initial)

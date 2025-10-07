@@ -2,10 +2,7 @@ package dev.knoxy.rynox.module
 
 import dev.knoxy.rynox.Rynox
 import dev.knoxy.rynox.event.Event
-import dev.knoxy.rynox.module.modules.Combat.KillAura
-import dev.knoxy.rynox.module.modules.Movement.Fly
 import dev.knoxy.rynox.module.modules.Player.AutoSprint
-import dev.knoxy.rynox.module.modules.Render.ESP
 import dev.knoxy.rynox.util.ConfigManager
 import net.minecraft.client.MinecraftClient
 
@@ -14,12 +11,7 @@ class ModuleManager {
   private val configManager: ConfigManager = Rynox.configManager
 
   fun init() {
-    modules.addAll(listOf(
-      KillAura(),
-      Fly(),
-      ESP(),
-      AutoSprint()
-    ))
+    modules.add(AutoSprint())
     loadFromConfig()
   }
 

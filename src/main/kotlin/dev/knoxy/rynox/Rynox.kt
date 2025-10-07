@@ -11,7 +11,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.option.KeyBindingCategory
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
@@ -26,7 +25,7 @@ object Rynox : ClientModInitializer {
   override fun onInitializeClient() {
     moduleManager.init()
     configManager.init()
-    eventBus.register<Any>(moduleManager)
+    eventBus.register(moduleManager)
 
     ClientTickEvents.END_CLIENT_TICK.register { client: MinecraftClient ->
       moduleManager.onTick(client)
@@ -38,7 +37,7 @@ object Rynox : ClientModInitializer {
         "key.rynox.gui",
         InputUtil.Type.KEYSYM,
         GLFW.GLFW_KEY_RIGHT_SHIFT,
-        KeyBindingCategory(Text.literal("Rynox"), 100)
+        "Rynox"
       )
     )
 

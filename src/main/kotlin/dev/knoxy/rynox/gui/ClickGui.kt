@@ -3,12 +3,10 @@ package dev.knoxy.rynox.gui
 import dev.knoxy.rynox.Rynox
 import dev.knoxy.rynox.module.Category
 import dev.knoxy.rynox.module.ModuleManager
-import dev.knoxy.rynox.module.modules.Render.ESP
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
+import kotlin.math.min
 
 class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
   private val moduleManager: ModuleManager = Rynox.moduleManager
@@ -26,15 +24,10 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
   override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
     context.matrices.push()
 
-    context.fill(0, 0, width, height, 0x80000000.toInt())
+    context.fill(0, 0, width, height, 0x80000000)
 
     panels.forEach { panel ->
       panel.render(context, mouseX.toFloat(), mouseY.toFloat())
-    }
-
-    val espModule = moduleManager.getModule("ESP") as? ESP
-    if (espModule?.enabled == true) {
-      espModule.renderESP(client, context.matrices)
     }
 
     context.matrices.pop()
@@ -91,7 +84,7 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
         y.toInt(),
         (x + width).toInt(),
         (y + h).toInt(),
-        0xFF202020.toInt()
+        0xFF202020
       )
 
       context.fill(
@@ -101,12 +94,12 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
         (y + headerHeight).toInt(),
         category.color
       )
-      textRenderer.drawWithShadow(
-        context,
+      context.drawTextWithShadow(
+        textRenderer,
         "${category.icon} ${category.name}",
-        x + 2f,
-        y + 2f,
-        0xFFFFFFFF.toInt()
+        (x + 2f).toInt(),
+        (y + 2f).toInt(),
+        0xFFFFFFFF
       )
 
       if (expanded) {
@@ -119,31 +112,15 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
               modY.toInt(),
               (x + width - 2).toInt(),
               (modY + moduleHeight).toInt(),
-              if (module.enabled) 0xFF404040.toInt() else 0xFF303030.toInt()
+              if (module.enabled) 0xFF404040 else 0xFF303030
             )
-            textRenderer.drawWithShadow(
-              context,
+            context.drawTextWithShadow(
+              textRenderer,
               module.name,
-              x + 4f,
-              modY + 2f,
-              if (module.enabled) 0xFF00FF00.toInt() else 0xFFFFFFFF.toInt()
+              (x + 4f).toInt(),
+              (modY + 2f).toInt(),
+              if (module.enabled) 0xFF00FF00 else 0xFFFFFFFF
             )
-
-            module.getSettings().forEach { setting ->
-              if (setting is SliderSetting) {
-                val barX = x + 60f
-                val barWidth = 30f
-                val fillWidth = ((setting.value - setting.min) /
-                  (setting.max - setting.min)) * barWidth
-                context.fill(
-                  barX.toInt(),
-                  (modY + 10f).toInt(),
-                  (barX + fillWidth).toInt(),
-                  (modY + 12f).toInt(),
-                  0xFFAAAAAA.toInt()
-                )
-              }
-            }
           }
         }
 
@@ -156,7 +133,7 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
             scrollY.toInt(),
             x.toInt() + width.toInt(),
             (scrollY + barHeight).toInt(),
-            0xFF808080.toInt()
+            0xFF808080
           )
         }
       }
@@ -178,20 +155,6 @@ class ClickGui : Screen(Text.literal("Rynox ClickGUI")) {
           if (mx >= x && mx <= x + width && my >= modY && my <= modY + moduleHeight) {
             module.toggle()
             moduleManager.saveToConfig()
-          }
-        }
-
-        modules.forEachIndexed { index, module ->
-          val modY = y + headerHeight + (index * moduleHeight) - scrollOffset
-          module.getSettings().forEachIndexed { sIndex, setting ->
-            val setY = modY + (sIndex * 8f)
-            if (setting is SliderSetting &&
-              mx >= x + 60 && mx <= x + 90 && my >= setY && my <= setY + 6
-            ) {
-              val newValue = setting.min + ((mx - (x + 60)) / 30f) *
-                (setting.max - setting.min)
-              setting.value = newValue
-            }
           }
         }
       } else if (button == 1) {
